@@ -31,3 +31,4 @@ _testmain.go
 *.bak
 
 example/example
+*~

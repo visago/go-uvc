@@ -25,6 +25,10 @@ const (
 	AEModeShutterPriority AEMode = 4
 	// auto exposure time, manual iris
 	AEModeAperturePriority AEMode = 8
+
+	// For SetAEPriority
+	AEPriorityConstantFrameRate = 0
+	AEPriorityVariableFrameRate = 1
 )
 
 var (
@@ -83,6 +87,34 @@ func (dev *Device) SetAEMode(mode AEMode) error {
 	}
 
 	r := C.uvc_set_ae_mode(dev.handle, C.uchar(mode))
+	return newError(ErrorType(r))
+}
+
+func (dev *Device) SetAEPriority(priority uint8) error {
+	// 0: frame rate must remain constant; 1: frame rate may be varied for AE purposes
+	// A `priority` value of zero means the camera may not vary its frame rate. A value of 1
+	// means the frame rate is variable. This setting has no effect outside of the `auto` and
+	// `shutter_priority` auto-exposure modes.
+	dev.mu.RLock()
+	defer dev.mu.RUnlock()
+
+	if dev.handle == nil {
+		return ErrDeviceClosed
+	}
+
+	r := C.uvc_set_ae_priority(dev.handle, C.uchar(priority))
+	return newError(ErrorType(r))
+}
+
+func (dev *Device) SetExposureRelative(exposure int8) error {
+	dev.mu.RLock()
+	defer dev.mu.RUnlock()
+
+	if dev.handle == nil {
+		return ErrDeviceClosed
+	}
+
+	r := C.uvc_set_exposure_rel(dev.handle, C.schar(exposure))
 	return newError(ErrorType(r))
 }
 
