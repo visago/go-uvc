@@ -118,6 +118,18 @@ func (dev *Device) SetExposureRelative(exposure int8) error {
 	return newError(ErrorType(r))
 }
 
+func (dev *Device) SetBrightness(brightness int16) error {
+	dev.mu.RLock()
+	defer dev.mu.RUnlock()
+
+	if dev.handle == nil {
+		return ErrDeviceClosed
+	}
+
+	r := C.uvc_set_brightness(dev.handle, C.short(brightness))
+	return newError(ErrorType(r))
+}
+
 // GetBusNumber gets the number of the bus to which the device is attached.
 func (dev *Device) GetBusNumber() uint8 {
 	return uint8(C.uvc_get_bus_number(dev.dev))
